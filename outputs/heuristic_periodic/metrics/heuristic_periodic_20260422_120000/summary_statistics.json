@@ -1,0 +1,29 @@
+{
+  "training": {
+    "total_episodes": 3000,
+    "total_duration_hours": 4.5
+  },
+  "performance": {
+    "initial_train_loss": 0.5201,
+    "final_train_loss": 0.31,
+    "best_train_loss": 0.31,
+    "avg_train_loss": 0.3818527398021563
+  },
+  "communication": {
+    "initial_comm_cost": 25.258666666666667,
+    "final_comm_cost": 25.258666666666667,
+    "avg_comm_cost": 25.258666666666667,
+    "total_comm_cost": 75776.0
+  },
+  "actions": {
+    "total_E": 750000,
+    "total_W": 750000,
+    "E_pct": 50.0,
+    "W_pct": 50.0
+  },
+  "efficiency": {
+    "loss_improvement": 0.2101,
+    "loss_improvement_pct": 40.39607767736974,
+    "bandwidth_reduction_pct": 45.98540145985402
+  }
+}

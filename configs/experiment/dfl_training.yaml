@@ -1,0 +1,98 @@
+# @package _global_
+
+# DFL Training Experiment Configuration
+# Full 4-layer system with RL-controlled federated learning
+
+defaults:
+  - /rl/ppo
+  - /simulation/v2v_env
+  - /data/v2v_trajectories
+  - _self_
+
+# DFL-specific settings
+use_dfl_features: false  # Set to false to load pretrained RL checkpoint (state_dim=106)
+use_when_head: false  # Disabled per professor's guidance: simplified RL agent (WHO + WHAT only)
+use_neighbor_encoder: false
+train_layer1: true  # Set to true to train LSTM from scratch through DFL
+
+# Checkpoints (REQUIRED: Layer 1 unless train_layer1=true)
+layer1_checkpoint: outputs/checkpoints/best_model.pt
+rl_checkpoint: null  # Optional: outputs/rl/checkpoints/final_model.pt
+
+# Federated learning parameters
+federated:
+  alpha: 0.3  # Aggregation weight
+  staleness_decay: 0.1  # Staleness penalty decay rate
+  max_staleness_seconds: 30.0  # Max staleness before discarding
+  num_prototypes: 5  # K-Means clusters for prototype extraction
+  lstm_lr: 0.001  # Learning rate for LSTM when train_layer1=true
+  lstm_local_epochs: 5  # Number of local epochs for LSTM training per DFL round
+
+# RL training overrides for DFL
+rl:
+  actor:
+    state_dim: 106
+    shared_hidden_dim: 128
+    when_hidden_dim: 32  # Not used when use_when_head=false
+    who_hidden_dim: 64
+    what_hidden_dim: 64
+    max_neighbors: 5
+    k_neighbors: 2
+    num_repr_types: 2  # Changed from 3 to 2: only Embeddings (E) and Weights (W), no Prototypes
+    dropout: 0.1
+
+  critic:
+    state_dim: 106
+    num_vehicles: 5  # Must match simulation.num_vehicles
+    hidden_dim: 256
+    num_layers: 3
+    dropout: 0.1
+
+  training:
+    num_episodes: 3000  # Number of DFL training episodes
+    buffer_size: 1500  # Adjusted for 5 vehicles (300 per vehicle)
+    batch_size: 256
+    ppo_epochs: 4
+    learning_rate: 0.0003
+    gamma: 0.99
+    gae_lambda: 0.95
+    clip_epsilon: 0.2
+    value_loss_coef: 0.5
+    entropy_coef: 0.01
+    max_grad_norm: 0.5
+    update_interval: 10  # Update every 10 episodes
+    save_interval: 100
+    log_interval: 10
+
+  reward:
+    immediate_weight: 0.3
+    global_weight: 0.7
+    perf_scale: 100.0
+    comm_cost_scale: 0.0  # Set to 0: use throughput constraint instead of scalar reward
+    staleness_penalty_weight: 0.0  # Disabled: synchronized learning (no staleness)
+
+  k_neighbors: 2
+
+# Data settings (override)
+data:
+  num_vehicles: 5  # Reduced for faster training (valid for CoCo comparison)
+  batch_size: 64
+
+# Simulation settings (override)
+simulation:
+  num_vehicles: 5  # Must match data.num_vehicles
+  max_episode_timesteps: 100
+  max_neighbors: 5
+  layer1_checkpoint: outputs/checkpoints/best_model.pt
+
+# Device configuration
+device: cuda:1  # RL agent on GPU 1
+lstm_device: cuda:0  # LSTM training on GPU 0
+
+# Reproducibility
+seed: 42
+
+# Output paths
+paths:
+  output_dir: outputs
+run_name: dfl_training

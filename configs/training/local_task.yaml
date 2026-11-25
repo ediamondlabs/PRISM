@@ -1,0 +1,46 @@
+name: local_task
+
+num_epochs: 1000          # Long training for maximum convergence
+learning_rate: 1.5e-3    # Optimized for 200 epochs (was 2e-3)
+weight_decay: 1e-5       # L2 regularization
+gradient_clip_val: 1.0   # Prevent exploding gradients (CRITICAL for LSTM)
+
+optimizer:
+  name: adam
+  betas: [0.9, 0.999]
+  eps: 1e-8
+
+loss:
+  name: mse
+  reduction: mean
+
+scheduler:
+  name: cosine_annealing
+  T_max: ${training.num_epochs}
+  eta_min: 1e-6
+
+early_stopping:
+  enabled: true
+  patience: 40          # Maximum patience for 200 epochs (was 30)
+  min_delta: 1e-7       # Ultra-sensitive for tiny improvements
+  monitor: val_loss
+  mode: min
+
+checkpointing:
+  save_best: true
+  save_last: true
+  monitor: val_loss
+  mode: min
+
+logging:
+  log_interval: 5       # More frequent logging for 200 epochs
+  log_gradients: false
+
+anomaly_detection:
+  threshold_method: percentile
+  threshold_percentile: 95
+  eval_metrics:
+    - f1
+    - precision
+    - recall
+    - auc

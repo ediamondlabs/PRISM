@@ -1,0 +1,20 @@
+{
+  "policy": "fixed_7030",
+  "policy_class": "Fixed7030Policy",
+  "num_episodes": 3000,
+  "final_train_loss": 0.195,
+  "final_lstm_loss": 0.195,
+  "total_bandwidth_mb": 105472.0,
+  "weights_ratio": 0.7,
+  "what_action_counts": {
+    "weights": 1050000,
+    "embeddings": 450000
+  },
+  "accuracy": 0.55,
+  "precision": 0.55,
+  "recall": 0.55,
+  "f1": 0.55,
+  "auroc": 0.4807692307692307,
+  "threshold": 46.070316314697266,
+  "convergence_round": null
+}

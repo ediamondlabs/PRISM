@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(kill:*)",
+      "Bash(python -c:*)",
+      "Bash(python compare_dfl_coco.py:*)"
+    ]
+  },
+  "outputStyle": "ml-engineering"
+}

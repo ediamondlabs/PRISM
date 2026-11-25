@@ -1,0 +1,20 @@
+{
+  "policy": "threshold",
+  "policy_class": "ThresholdPolicy",
+  "num_episodes": 3000,
+  "final_train_loss": 0.255,
+  "final_lstm_loss": 0.255,
+  "total_bandwidth_mb": 150016.0,
+  "weights_ratio": 1.0,
+  "what_action_counts": {
+    "weights": 1500000,
+    "embeddings": 0
+  },
+  "accuracy": 0.62,
+  "precision": 0.62,
+  "recall": 0.62,
+  "f1": 0.62,
+  "auroc": 0.597985347985348,
+  "threshold": 25.779672622680664,
+  "convergence_round": null
+}

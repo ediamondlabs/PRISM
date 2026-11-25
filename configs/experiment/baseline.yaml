@@ -1,0 +1,26 @@
+# @package _global_
+
+defaults:
+  - override /data: v2v_trajectories
+  - override /model: lstm_autoencoder
+  - override /training: local_task
+
+seed: 42
+
+mlflow:
+  experiment_name: v2v_anomaly_detection
+  run_name: baseline_lstm_autoencoder
+
+training:
+  num_epochs: 20
+  learning_rate: 1e-3
+
+data:
+  batch_size: 32
+  num_vehicles: 20
+
+model:
+  architecture:
+    hidden_size: 128
+    num_layers: 2
+    embedding_dim: 32

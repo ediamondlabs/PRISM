@@ -1,0 +1,20 @@
+{
+  "policy": "periodic",
+  "policy_class": "PeriodicPolicy",
+  "num_episodes": 3000,
+  "final_train_loss": 0.31,
+  "final_lstm_loss": 0.31,
+  "total_bandwidth_mb": 75776.0,
+  "weights_ratio": 0.5,
+  "what_action_counts": {
+    "weights": 750000,
+    "embeddings": 750000
+  },
+  "accuracy": 0.326,
+  "precision": 0.326,
+  "recall": 0.326,
+  "f1": 0.326,
+  "auroc": 0.4221611721611722,
+  "threshold": 30.21751594543457,
+  "convergence_round": null
+}

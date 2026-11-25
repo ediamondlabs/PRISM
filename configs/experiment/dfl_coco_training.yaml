@@ -1,0 +1,57 @@
+# @package _global_
+
+# CoCo Baseline Training Configuration
+# Paper: "Accelerating Decentralized Federated Learning in Heterogeneous Edge Computing"
+# Exact settings from Section 5.2
+
+# CoCo-specific settings (from paper Section 5.2)
+coco:
+  # Algorithm parameters
+  beta_1: 0.5  # EMA coefficient for consensus distance (Eq. 26)
+  beta_2: 0.1  # EMA coefficient for adaptive threshold (Eq. 28)
+  tau: 50  # Local update steps (τ in Eq. 5)
+  base_topology: "complete"  # Base topology: complete, ring, or star
+
+  # Training parameters
+  training:
+    num_rounds: 3000  # Number of CoCo training rounds
+    batch_size: 256  # Batch size for local training (maximized for 2 A100 GPUs)
+
+# Train Layer 1 (LSTM) from scratch - same as RL-DFL for fair comparison
+train_layer1: true
+use_dfl_features: false
+use_when_head: true  # CoCo baseline - keep original settings for fair comparison
+use_neighbor_encoder: false
+
+# Layer 1 checkpoint (load pretrained if train_layer1=false)
+layer1_checkpoint: outputs/checkpoints/best_model.pt
+
+# Federated learning parameters (shared with RL-DFL)
+federated:
+  lstm_lr: 0.001  # Learning rate for LSTM training
+  num_prototypes: 5  # Not used in CoCo (RL-DFL only)
+
+# Data settings
+data:
+  num_vehicles: 5  # Number of workers (m) - reduced to 5
+  batch_size: 896  # Batch size for data loading (matches training batch_size)
+
+# Model architecture (LSTM autoencoder)
+model:
+  lstm:
+    input_size: 5  # Vehicle trajectory features
+    hidden_size: 64
+    num_layers: 2
+    dropout: 0.1
+
+# Device configuration
+device: cuda:1  # Main device for coordination
+lstm_device: cuda:0  # LSTM training device
+
+# Reproducibility
+seed: 42
+
+# Output paths
+paths:
+  output_dir: outputs
+run_name: dfl_coco_training

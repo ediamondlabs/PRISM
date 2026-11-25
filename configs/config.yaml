@@ -1,0 +1,25 @@
+defaults:
+  - data: v2v_trajectories
+  - model: lstm_autoencoder
+  - training: local_task
+  - _self_
+
+seed: 42
+device: cuda
+
+paths:
+  data_dir: data
+  output_dir: outputs
+  checkpoint_dir: ${paths.output_dir}/checkpoints
+  logs_dir: ${paths.output_dir}/logs
+
+mlflow:
+  tracking_uri: ${paths.output_dir}/mlruns
+  experiment_name: v2v_anomaly_detection
+  run_name: null
+
+hydra:
+  run:
+    dir: ${paths.output_dir}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  sweep:
+    dir: ${paths.output_dir}/multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}

@@ -1,0 +1,20 @@
+#!/bin/bash
+# Commands to test DFL tracking integration
+
+echo "=========================================="
+echo "DFL TRACKING TEST COMMANDS"
+echo "=========================================="
+echo ""
+echo "1. TEST RUN (3 episodes, ~2-3 minutes):"
+echo "   python train_dfl.py +experiment=dfl_training run_name=tracking_test rl.training.num_episodes=3"
+echo ""
+echo "2. VERIFY TRACKING OUTPUT:"
+echo "   python test_tracking_quick.py"
+echo ""
+echo "3. VIEW SUMMARY:"
+echo "   python analyze_dfl_metrics.py --run outputs/dfl_metrics/tracking_test"
+echo ""
+echo "4. If all tests pass, run FULL TRAINING:"
+echo "   python train_dfl.py +experiment=dfl_training rl_checkpoint=outputs/rl/checkpoints/final_model.pt run_name=dfl_full"
+echo ""
+echo "=========================================="

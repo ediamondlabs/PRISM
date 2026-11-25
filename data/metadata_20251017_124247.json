@@ -1,0 +1,15 @@
+{
+    "session_id": "20251017_124247",
+    "total_records": 4048814,
+    "unique_vehicles": 3999,
+    "duration_seconds": 3599.9,
+    "sampling_rate_hz": 10,
+    "sensor_types": [
+      "GPS",
+      "IMU",
+      "Compass"
+    ],
+    "gps_noise_std_meters": 2.0,
+    "imu_accel_noise_std": 0.1,
+    "imu_gyro_noise_std": 0.01
+  }

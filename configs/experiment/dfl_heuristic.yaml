@@ -1,0 +1,122 @@
+# @package _global_
+
+# Heuristic Baselines Experiment Configuration
+# Same DFL infrastructure as dfl_training.yaml, but replaces RL actor
+# with fixed-rule heuristic policies for benchmarking.
+
+defaults:
+  - /rl/ppo
+  - /simulation/v2v_env
+  - /data/v2v_trajectories
+  - _self_
+
+# DFL-specific settings (identical to dfl_training.yaml)
+use_dfl_features: false
+use_when_head: false
+use_neighbor_encoder: false
+train_layer1: true
+
+# Checkpoints
+layer1_checkpoint: outputs/checkpoints/best_model.pt
+rl_checkpoint: null
+
+# Federated learning parameters (identical to dfl_training.yaml)
+federated:
+  alpha: 0.3
+  staleness_decay: 0.1
+  max_staleness_seconds: 30.0
+  num_prototypes: 5
+  lstm_lr: 0.001
+  lstm_local_epochs: 5
+
+# --- Heuristic-specific configuration ---
+heuristic:
+  # Policy name: weights_only, embeddings_only, fixed_switch,
+  #              periodic, threshold, fixed_7030
+  policy_name: weights_only
+
+  # FixedSwitch: switch from W→E at this episode.
+  # 1000 chosen near PRISM's convergence round (1200±150).
+  switch_episode: 1000
+
+  # Periodic: alternate W/E every N episodes (50/50 over 3000).
+  period: 100
+
+  # Threshold: send W when loss > threshold, E otherwise.
+  # 0.20 sits between initial loss (0.52) and converged loss (0.062).
+  loss_threshold: 0.20
+
+  # Fixed7030: probability of W. Matches PRISM's emergent ratio.
+  weights_ratio: 0.7
+
+  # Anomaly eval frequency for time-to-detection (R1).
+  eval_interval: 100
+
+# RL config (kept for RewardFunction and training loop parameters)
+rl:
+  actor:
+    state_dim: 106
+    shared_hidden_dim: 128
+    when_hidden_dim: 32
+    who_hidden_dim: 64
+    what_hidden_dim: 64
+    max_neighbors: 5
+    k_neighbors: 2
+    num_repr_types: 2
+    dropout: 0.1
+
+  critic:
+    state_dim: 106
+    num_vehicles: 5
+    hidden_dim: 256
+    num_layers: 3
+    dropout: 0.1
+
+  training:
+    num_episodes: 3000
+    buffer_size: 1500
+    batch_size: 256
+    ppo_epochs: 4
+    learning_rate: 0.0003
+    gamma: 0.99
+    gae_lambda: 0.95
+    clip_epsilon: 0.2
+    value_loss_coef: 0.5
+    entropy_coef: 0.01
+    max_grad_norm: 0.5
+    update_interval: 10
+    save_interval: 100
+    log_interval: 10
+
+  reward:
+    immediate_weight: 0.3
+    global_weight: 0.7
+    perf_scale: 100.0
+    comm_cost_scale: 0.0
+    staleness_penalty_weight: 0.0
+
+  k_neighbors: 2
+
+# Data settings (identical to dfl_training.yaml)
+data:
+  num_vehicles: 5
+  batch_size: 64
+
+# Simulation settings (identical to dfl_training.yaml)
+simulation:
+  num_vehicles: 5
+  max_episode_timesteps: 100
+  max_neighbors: 5
+  layer1_checkpoint: outputs/checkpoints/best_model.pt
+
+# Device configuration (single GPU: both on cuda:0)
+device: cuda:0
+lstm_device: cuda:0
+
+# Reproducibility
+seed: 42
+
+# Output paths
+paths:
+  output_dir: outputs
+run_name: heuristic_baseline

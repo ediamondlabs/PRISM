@@ -1,0 +1,57 @@
+name: ppo_ctde
+
+# Actor architecture (Decentralized)
+actor:
+  state_dim: 106  # 10 local + 96 neighbor encoding (mean/max/std pooling)
+  shared_hidden_dim: 128
+  who_hidden_dim: 64
+  what_hidden_dim: 64
+  max_neighbors: 20
+  k_neighbors: 2
+  num_repr_types: 2  # W=Weights, E=Embeddings
+  dropout: 0.1
+  use_when_head: false
+
+# Critic architecture (Centralized)
+critic:
+  type: centralized
+  state_dim: 106
+  num_vehicles: 20
+  hidden_dim: 256
+  num_layers: 3
+  dropout: 0.1
+
+# PPO hyperparameters
+ppo:
+  lr_actor: 3.0e-4
+  lr_critic: 1.0e-3
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_epsilon: 0.2
+  entropy_coef: 0.01
+  value_loss_coef: 0.5
+  max_grad_norm: 0.5
+
+# Training settings
+training:
+  num_epochs_per_update: 10
+  batch_size: 256
+  buffer_size: 2048
+  num_updates: 1500
+  save_interval: 100
+  eval_interval: 50
+  log_interval: 10
+
+# Reward: r = βc × r_comm + βs × r_security (paper Eq. 5)
+reward:
+  immediate_weight: 0.3
+  global_weight: 0.7
+  perf_scale: 100.0
+  communication_success_weight: 0.5
+  neighbor_stability_weight: 0.5
+
+# Evaluation
+evaluation:
+  num_episodes: 10
+  deterministic: true
+  render: false

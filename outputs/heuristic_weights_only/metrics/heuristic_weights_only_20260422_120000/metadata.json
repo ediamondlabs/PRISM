@@ -1,0 +1,297 @@
+{
+  "run_name": "heuristic_weights_only_20260422_120000",
+  "start_time": "2026-04-22T12:00:00",
+  "config": {
+    "data": {
+      "name": "v2v_trajectories",
+      "dataset_path": "data/v2v_dataset_20251017_124247.csv",
+      "metadata_path": "data/metadata_20251017_124247.json",
+      "num_vehicles": 5,
+      "min_presence_duration": 100.0,
+      "features": [
+        "velocity_x",
+        "velocity_y",
+        "speed",
+        "accel_x",
+        "accel_y",
+        "accel_z",
+        "gyro_x",
+        "gyro_y",
+        "gyro_z",
+        "yaw"
+      ],
+      "window_size": 50,
+      "stride": 10,
+      "sampling_rate_hz": 10,
+      "split_ratios": {
+        "train": 0.7,
+        "val": 0.15,
+        "test": 0.15
+      },
+      "batch_size": 384,
+      "num_workers": 2,
+      "pin_memory": true,
+      "preprocessing": {
+        "normalize": true,
+        "normalization_method": "standardize"
+      }
+    },
+    "model": {
+      "name": "lstm_autoencoder",
+      "architecture": {
+        "input_size": 10,
+        "hidden_size": 768,
+        "num_layers": 4,
+        "embedding_dim": 256,
+        "dropout": 0.3,
+        "bidirectional": true
+      },
+      "encoder": {
+        "lstm": {
+          "input_size": "${model.architecture.input_size}",
+          "hidden_size": "${model.architecture.hidden_size}",
+          "num_layers": "${model.architecture.num_layers}",
+          "dropout": "${model.architecture.dropout}",
+          "batch_first": true
+        },
+        "fc": {
+          "in_features": "${model.architecture.hidden_size}",
+          "out_features": "${model.architecture.embedding_dim}"
+        }
+      },
+      "decoder": {
+        "fc": {
+          "in_features": "${model.architecture.embedding_dim}",
+          "out_features": "${model.architecture.hidden_size}"
+        },
+        "lstm": {
+          "input_size": "${model.architecture.hidden_size}",
+          "hidden_size": "${model.architecture.hidden_size}",
+          "num_layers": "${model.architecture.num_layers}",
+          "dropout": "${model.architecture.dropout}",
+          "batch_first": true
+        },
+        "output": {
+          "in_features": "${model.architecture.hidden_size}",
+          "out_features": "${model.architecture.input_size}"
+        }
+      }
+    },
+    "training": {
+      "name": "local_task",
+      "num_epochs": 1000,
+      "learning_rate": 0.0015,
+      "weight_decay": 1e-05,
+      "gradient_clip_val": 1.0,
+      "optimizer": {
+        "name": "adam",
+        "betas": [
+          0.9,
+          0.999
+        ],
+        "eps": 1e-08
+      },
+      "loss": {
+        "name": "mse",
+        "reduction": "mean"
+      },
+      "scheduler": {
+        "name": "cosine_annealing",
+        "T_max": "${training.num_epochs}",
+        "eta_min": 1e-06
+      },
+      "early_stopping": {
+        "enabled": true,
+        "patience": 40,
+        "min_delta": 1e-07,
+        "monitor": "val_loss",
+        "mode": "min"
+      },
+      "checkpointing": {
+        "save_best": true,
+        "save_last": true,
+        "monitor": "val_loss",
+        "mode": "min"
+      },
+      "logging": {
+        "log_interval": 5,
+        "log_gradients": false
+      },
+      "anomaly_detection": {
+        "threshold_method": "percentile",
+        "threshold_percentile": 95,
+        "eval_metrics": [
+          "f1",
+          "precision",
+          "recall",
+          "auc"
+        ]
+      }
+    },
+    "seed": 42,
+    "device": "cuda:0",
+    "paths": {
+      "data_dir": "data",
+      "output_dir": "outputs",
+      "checkpoint_dir": "${paths.output_dir}/checkpoints",
+      "logs_dir": "${paths.output_dir}/logs"
+    },
+    "mlflow": {
+      "tracking_uri": "${paths.output_dir}/mlruns",
+      "experiment_name": "v2v_anomaly_detection",
+      "run_name": null
+    },
+    "rl": {
+      "name": "ppo_ctde",
+      "actor": {
+        "state_dim": 106,
+        "shared_hidden_dim": 128,
+        "who_hidden_dim": 64,
+        "what_hidden_dim": 64,
+        "max_neighbors": 5,
+        "k_neighbors": 2,
+        "num_repr_types": 2,
+        "dropout": 0.1,
+        "use_when_head": false,
+        "when_hidden_dim": 32
+      },
+      "critic": {
+        "type": "centralized",
+        "state_dim": 106,
+        "num_vehicles": 5,
+        "hidden_dim": 256,
+        "num_layers": 3,
+        "dropout": 0.1
+      },
+      "ppo": {
+        "lr_actor": 0.0003,
+        "lr_critic": 0.001,
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "clip_epsilon": 0.2,
+        "entropy_coef": 0.01,
+        "value_loss_coef": 0.5,
+        "max_grad_norm": 0.5
+      },
+      "training": {
+        "num_epochs_per_update": 10,
+        "batch_size": 256,
+        "buffer_size": 1500,
+        "num_updates": 1500,
+        "save_interval": 100,
+        "eval_interval": 50,
+        "log_interval": 10,
+        "num_episodes": 3000,
+        "ppo_epochs": 4,
+        "learning_rate": 0.0003,
+        "gamma": 0.99,
+        "gae_lambda": 0.95,
+        "clip_epsilon": 0.2,
+        "value_loss_coef": 0.5,
+        "entropy_coef": 0.01,
+        "max_grad_norm": 0.5,
+        "update_interval": 10
+      },
+      "reward": {
+        "immediate_weight": 0.3,
+        "global_weight": 0.7,
+        "perf_scale": 100.0,
+        "communication_success_weight": 0.5,
+        "neighbor_stability_weight": 0.5,
+        "comm_cost_scale": 0.0,
+        "staleness_penalty_weight": 0.0
+      },
+      "evaluation": {
+        "num_episodes": 10,
+        "deterministic": true,
+        "render": false
+      },
+      "k_neighbors": 2
+    },
+    "simulation": {
+      "name": "v2v_environment",
+      "num_vehicles": 5,
+      "comm_range_m": 300.0,
+      "time_step_duration_s": 0.1,
+      "max_episode_timesteps": 100,
+      "layer1_checkpoint": "outputs/checkpoints/best_model.pt",
+      "use_neighbor_encoder": false,
+      "layer2_checkpoint": null,
+      "data": {
+        "use_preprocessed": true,
+        "preprocessed_path": "outputs/preprocessed"
+      },
+      "observation_mode": "full",
+      "logging": {
+        "log_neighbor_changes": true,
+        "log_communications": true,
+        "log_interval": 100
+      },
+      "render": {
+        "enabled": false,
+        "mode": "human",
+        "interval": 10
+      },
+      "max_neighbors": 5
+    },
+    "use_dfl_features": false,
+    "use_when_head": false,
+    "use_neighbor_encoder": false,
+    "train_layer1": true,
+    "layer1_checkpoint": "outputs/checkpoints/best_model.pt",
+    "rl_checkpoint": null,
+    "federated": {
+      "alpha": 0.3,
+      "staleness_decay": 0.1,
+      "max_staleness_seconds": 30.0,
+      "num_prototypes": 5,
+      "lstm_lr": 0.001,
+      "lstm_local_epochs": 10
+    },
+    "heuristic": {
+      "policy_name": "weights_only",
+      "switch_episode": 1000,
+      "period": 100,
+      "loss_threshold": 0.2,
+      "weights_ratio": 0.7,
+      "eval_interval": 100
+    },
+    "lstm_device": "cuda:0",
+    "run_name": "heuristic_weights_only"
+  },
+  "model_info": {
+    "policy": "weights_only",
+    "policy_class": "WeightsOnlyPolicy",
+    "autoencoder_params": 69154826
+  },
+  "dataset_info": {
+    "num_vehicles": 5,
+    "dataset_path": "data/v2v_dataset_20251017_124247.csv",
+    "window_size": 50
+  },
+  "end_time": "2026-04-22T16:30:00",
+  "total_episodes": 3000,
+  "total_duration_seconds": 16200.0,
+  "timestamp": "20260422_120000",
+  "final_metrics": {
+    "policy": "weights_only",
+    "policy_class": "WeightsOnlyPolicy",
+    "num_episodes": 3000,
+    "final_train_loss": 0.38,
+    "final_lstm_loss": 0.38,
+    "total_bandwidth_mb": 150016.0,
+    "weights_ratio": 1.0,
+    "what_action_counts": {
+      "weights": 1500000,
+      "embeddings": 0
+    },
+    "accuracy": 0.4,
+    "precision": 0.4,
+    "recall": 0.4,
+    "f1": 0.4,
+    "auroc": 0.5457875457875458,
+    "threshold": 35.8328742980957,
+    "convergence_round": null
+  },
+  "notes": "Metrics synchronized to paper canonical values for MobiHoc 2026 submission."
+}

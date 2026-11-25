@@ -1,0 +1,122 @@
+# Python
+*.pyc
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+eeg_fl_venv/
+venv/
+env/
+
+# Model files
+*.keras
+*.tflite
+*.h5
+*.pkl
+*.pt
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs/
+.log
+
+# outputs/ — ignore all except these directories (paths relative to repo root)
+outputs/*
+!outputs/heuristic_embeddings_only/
+!outputs/heuristic_embeddings_only/**
+!outputs/heuristic_fixed_switch/
+!outputs/heuristic_fixed_switch/**
+!outputs/heuristic_periodic/
+!outputs/heuristic_periodic/**
+!outputs/heuristic_weights_only/
+!outputs/heuristic_weights_only/**
+!outputs/heuristic_threshold/
+!outputs/heuristic_threshold/**
+!outputs/heuristic_fixed_7030/
+!outputs/heuristic_fixed_7030/**
+
+# Outputs and Artifacts
+output/
+models/output/
+comparison/
+
+# MLflow tracking
+mlruns/
+.mlruns/
+
+# Checkpoints
+checkpoints/
+*.ckpt
+
+# Preprocessed data
+preprocessed/
+.npz
+
+# Data files (large — do not commit raw)
+*.npy
+*.csv
+# Keep data directory structure, metadata, and split chunks
+!data/.gitkeep
+!data/*.json
+!data/chunks/
+!data/chunks/*.part
+!data/chunks/manifest.txt
+
+# Documents (keep README.md and docs/)
+*.docx
+*.xlsx
+
+# Old/deprecated code
+federated old/
+utils/metrics_calibration.py
+
+# Generated plots (keep only in outputs/)
+*.png
+*.jpg
+*.jpeg
+!docs/**/*.png
+!docs/**/*.jpg
+
+# Temporary and test files
+*.tmp
+*.bak
+quick_test.py
+quick_train_test.py
+
+# Hydra outputs
+.hydra/
+
+# Pytest cache
+.pytest_cache/
+.coverage
+htmlcov/
+mlflow metrics/
+
+# Jupyter Notebooks checkpoints
+.ipynb_checkpoints/
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
+
+transcript*.txt
+clean_mlruns/
+manuscript/
+outputs from the server/
+temp/

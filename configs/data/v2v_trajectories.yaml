@@ -1,0 +1,36 @@
+name: v2v_trajectories
+
+dataset_path: data/v2v_dataset_20251017_124247.csv
+metadata_path: data/metadata_20251017_124247.json
+
+num_vehicles: 50        # More vehicles = more training data (was 20)
+min_presence_duration: 100.0
+
+features:
+  - velocity_x
+  - velocity_y
+  - speed
+  - accel_x
+  - accel_y
+  - accel_z
+  - gyro_x
+  - gyro_y
+  - gyro_z
+  - yaw
+
+window_size: 50
+stride: 10
+sampling_rate_hz: 10
+
+split_ratios:
+  train: 0.7
+  val: 0.15
+  test: 0.15
+
+batch_size: 512         # Maximum batch size for A100 (was 256)
+num_workers: 12         # More workers for maximum data throughput
+pin_memory: true        # Fast CPU->GPU transfer
+
+preprocessing:
+  normalize: true
+  normalization_method: standardize

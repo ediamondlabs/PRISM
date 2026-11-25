@@ -1,0 +1,34 @@
+name: lstm_autoencoder
+
+architecture:
+  input_size: 10
+  hidden_size: 768        # Increased to 768 for maximum capacity on A100
+  num_layers: 4           # Deeper network (4 layers) for better learning
+  embedding_dim: 256      # Larger embeddings for richer representations
+  dropout: 0.3            # Increased dropout to prevent overfitting
+  bidirectional: true     # Bidirectional LSTM for temporal context
+
+encoder:
+  lstm:
+    input_size: ${model.architecture.input_size}
+    hidden_size: ${model.architecture.hidden_size}
+    num_layers: ${model.architecture.num_layers}
+    dropout: ${model.architecture.dropout}
+    batch_first: true
+  fc:
+    in_features: ${model.architecture.hidden_size}
+    out_features: ${model.architecture.embedding_dim}
+
+decoder:
+  fc:
+    in_features: ${model.architecture.embedding_dim}
+    out_features: ${model.architecture.hidden_size}
+  lstm:
+    input_size: ${model.architecture.hidden_size}
+    hidden_size: ${model.architecture.hidden_size}
+    num_layers: ${model.architecture.num_layers}
+    dropout: ${model.architecture.dropout}
+    batch_first: true
+  output:
+    in_features: ${model.architecture.hidden_size}
+    out_features: ${model.architecture.input_size}

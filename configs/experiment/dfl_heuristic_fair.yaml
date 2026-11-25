@@ -1,0 +1,107 @@
+# @package _global_
+
+# Heuristic Baselines — Paper-Faithful Config
+# Identical architecture and hyperparameters to the published DFL experiment.
+# Use this for final paper results on a GPU with sm_75+ (T4, A100, RTX 3070+).
+#
+# Estimated runtime: ~1.5-2 h per policy on T4, ~20 h total for 6 policies.
+# Requirements: GPU with CUDA compute capability >= 7.0 (sm_70+)
+#   Kaggle: Settings → Accelerator → GPU T4 x1
+
+defaults:
+  - /rl/ppo
+  - /simulation/v2v_env
+  - /data/v2v_trajectories
+  - _self_
+
+use_dfl_features: false
+use_when_head: false
+use_neighbor_encoder: false
+train_layer1: true
+layer1_checkpoint: outputs/checkpoints/best_model.pt
+rl_checkpoint: null
+
+# ─── Model: full paper architecture (69M params, h=768, L=4, bidir) ───────────
+model:
+  architecture:
+    hidden_size: 768
+    num_layers: 4
+    embedding_dim: 256
+    dropout: 0.3
+    bidirectional: true
+
+# ─── Training: full paper schedule ────────────────────────────────────────────
+federated:
+  alpha: 0.3
+  staleness_decay: 0.1
+  max_staleness_seconds: 30.0
+  num_prototypes: 5
+  lstm_lr: 0.001
+  lstm_local_epochs: 5
+
+heuristic:
+  policy_name: weights_only
+  switch_episode: 1000
+  period: 100
+  loss_threshold: 0.20
+  weights_ratio: 0.7
+  eval_interval: 100
+
+rl:
+  actor:
+    state_dim: 106
+    shared_hidden_dim: 128
+    when_hidden_dim: 32
+    who_hidden_dim: 64
+    what_hidden_dim: 64
+    max_neighbors: 5
+    k_neighbors: 2
+    num_repr_types: 2
+    dropout: 0.1
+  critic:
+    state_dim: 106
+    num_vehicles: 5
+    hidden_dim: 256
+    num_layers: 3
+    dropout: 0.1
+  training:
+    num_episodes: 3000
+    buffer_size: 1500
+    batch_size: 256
+    ppo_epochs: 4
+    learning_rate: 0.0003
+    gamma: 0.99
+    gae_lambda: 0.95
+    clip_epsilon: 0.2
+    value_loss_coef: 0.5
+    entropy_coef: 0.01
+    max_grad_norm: 0.5
+    update_interval: 10
+    save_interval: 100
+    log_interval: 10
+  reward:
+    immediate_weight: 0.3
+    global_weight: 0.7
+    perf_scale: 100.0
+    comm_cost_scale: 0.0
+    staleness_penalty_weight: 0.0
+  k_neighbors: 2
+
+data:
+  num_vehicles: 5
+  batch_size: 64
+
+simulation:
+  num_vehicles: 5
+  max_episode_timesteps: 100
+  max_neighbors: 5
+  layer1_checkpoint: outputs/checkpoints/best_model.pt
+
+# auto: falls back to CPU if GPU unavailable/incompatible (see get_device())
+device: auto
+lstm_device: auto
+
+seed: 42
+paths:
+  output_dir: outputs
+run_name: heuristic_baseline

@@ -1,0 +1,39 @@
+name: neighbor_encoder
+
+# Neighbor Encoder (Layer 2) - DeepSets architecture for permutation-invariant neighbor encoding
+architecture:
+  # Input: neighbor features (relative position, velocity, link quality, anomaly score, embedding)
+  neighbor_feature_dim: 40  # 3 + 3 + 1 + 1 + 32
+
+  # φ network (individual neighbor encoding)
+  phi_hidden_dim: 64
+  phi_output_dim: 32
+
+  # ρ network (set aggregation encoding)
+  # Input: concatenated [mean, max, std] pooling (3 * phi_output_dim = 96)
+  rho_hidden_dim: 64
+  rho_output_dim: 32
+
+  # Regularization
+  dropout: 0.1
+
+# Maximum number of neighbors to process (for batching)
+max_neighbors: 20
+
+# Feature extraction settings
+features:
+  # Relative position features
+  use_relative_position: true  # dx, dy, distance
+
+  # Relative velocity features
+  use_relative_velocity: true  # dvx, dvy, relative_speed
+
+  # Link quality (signal strength based on distance)
+  use_link_quality: true
+
+  # Neighbor's anomaly score
+  use_anomaly_score: true
+
+  # Neighbor's trajectory embedding (from Layer 1)
+  use_embedding: true
+  embedding_dim: 32

@@ -1,0 +1,97 @@
+# @package _global_
+
+# Smoke test for dfl_heuristic — runs 5 episodes to verify nothing breaks.
+# Not for real results; use dfl_heuristic.yaml for actual experiments.
+#
+# Usage:
+#   python train_dfl_heuristic.py +experiment=dfl_heuristic_smoke
+#   python train_dfl_heuristic.py +experiment=dfl_heuristic_smoke heuristic.policy_name=periodic
+
+defaults:
+  - /rl/ppo
+  - /simulation/v2v_env
+  - /data/v2v_trajectories
+  - _self_
+
+use_dfl_features: false
+use_when_head: false
+use_neighbor_encoder: false
+train_layer1: true
+
+layer1_checkpoint: outputs/checkpoints/best_model.pt
+rl_checkpoint: null
+
+federated:
+  alpha: 0.3
+  staleness_decay: 0.1
+  max_staleness_seconds: 30.0
+  num_prototypes: 5
+  lstm_lr: 0.001
+  lstm_local_epochs: 1  # 1 epoch per vehicle to keep it fast
+
+heuristic:
+  policy_name: weights_only
+  switch_episode: 3
+  period: 2
+  loss_threshold: 0.01
+  weights_ratio: 0.7
+  eval_interval: 3  # Trigger anomaly eval at least once in 5 episodes
+
+rl:
+  actor:
+    state_dim: 106
+    shared_hidden_dim: 128
+    when_hidden_dim: 32
+    who_hidden_dim: 64
+    what_hidden_dim: 64
+    max_neighbors: 5
+    k_neighbors: 2
+    num_repr_types: 2
+    dropout: 0.1
+  critic:
+    state_dim: 106
+    num_vehicles: 5
+    hidden_dim: 256
+    num_layers: 3
+    dropout: 0.1
+  training:
+    num_episodes: 5
+    buffer_size: 1500
+    batch_size: 256
+    ppo_epochs: 4
+    learning_rate: 0.0003
+    gamma: 0.99
+    gae_lambda: 0.95
+    clip_epsilon: 0.2
+    value_loss_coef: 0.5
+    entropy_coef: 0.01
+    max_grad_norm: 0.5
+    update_interval: 10
+    save_interval: 5
+    log_interval: 1  # Log every episode
+  reward:
+    immediate_weight: 0.3
+    global_weight: 0.7
+    perf_scale: 100.0
+    comm_cost_scale: 0.0
+    staleness_penalty_weight: 0.0
+  k_neighbors: 2
+
+data:
+  num_vehicles: 5
+  batch_size: 64
+
+simulation:
+  num_vehicles: 5
+  max_episode_timesteps: 10  # 10 timesteps per episode instead of 100
+  max_neighbors: 5
+  layer1_checkpoint: outputs/checkpoints/best_model.pt
+
+device: cuda:0
+lstm_device: cuda:0
+
+seed: 42
+
+paths:
+  output_dir: outputs
+run_name: heuristic_smoke

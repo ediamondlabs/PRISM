@@ -1,0 +1,20 @@
+{
+  "policy": "embeddings_only",
+  "policy_class": "EmbeddingsOnlyPolicy",
+  "num_episodes": 3000,
+  "final_train_loss": 0.29,
+  "final_lstm_loss": 0.29,
+  "total_bandwidth_mb": 1536.0,
+  "weights_ratio": 0.0,
+  "what_action_counts": {
+    "weights": 0,
+    "embeddings": 1500000
+  },
+  "accuracy": 0.389,
+  "precision": 0.389,
+  "recall": 0.389,
+  "f1": 0.389,
+  "auroc": 0.5009157509157509,
+  "threshold": 30.554100036621094,
+  "convergence_round": null
+}

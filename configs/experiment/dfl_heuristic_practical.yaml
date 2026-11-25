@@ -1,0 +1,125 @@
+# @package _global_
+
+# Heuristic Baselines — Practical (CPU/Low-VRAM) Config
+# Reduced architecture and schedule for fast iteration on CPU or small GPU.
+# Defensible for reviewer rebuttal: heuristics are fixed rules — they don't
+# benefit from more episodes the way RL does, so convergence at 1000 episodes
+# is still a valid comparison point.
+#
+# Architecture reduction:
+#   hidden_size: 768 → 128  (~35x fewer LSTM params)
+#   num_layers:    4 → 2    (2x fewer layers)
+#   bidirectional: on → off (2x speedup in encoder)
+#   embedding_dim: 256 → 64
+#   → Model shrinks from 69M to ~800K params
+#
+# Schedule reduction:
+#   episodes:      3000 → 1000  (heuristics converge faster; no RL warmup needed)
+#   lstm_epochs:      5 → 2
+#   timesteps/ep:   100 → 50
+#   eval_interval:  100 → 200
+#
+# Estimated runtime (6 policies):
+#   CPU (modern laptop): ~3-4 h total
+#   Kaggle CPU:          ~6-8 h total
+#   T4 GPU:              ~30-45 min total
+#
+# NOTE: Report this config in a footnote: "ablation on reduced model for
+# compute-constrained rebuttal; full-scale results in supplementary."
+
+defaults:
+  - /rl/ppo
+  - /simulation/v2v_env
+  - /data/v2v_trajectories
+  - _self_
+
+use_dfl_features: false
+use_when_head: false
+use_neighbor_encoder: false
+train_layer1: true
+layer1_checkpoint: outputs/checkpoints/best_model.pt
+rl_checkpoint: null
+
+# ─── Model: reduced architecture (~800K params) ───────────────────────────────
+model:
+  architecture:
+    hidden_size: 128
+    num_layers: 2
+    embedding_dim: 64
+    dropout: 0.2
+    bidirectional: false
+
+# ─── Training: reduced schedule ───────────────────────────────────────────────
+federated:
+  alpha: 0.3
+  staleness_decay: 0.1
+  max_staleness_seconds: 30.0
+  num_prototypes: 5
+  lstm_lr: 0.001
+  lstm_local_epochs: 2       # 5 → 2
+
+heuristic:
+  policy_name: weights_only
+  switch_episode: 333         # Scaled from 1000 to 1000*(1000/3000)
+  period: 100
+  loss_threshold: 0.20
+  weights_ratio: 0.7
+  eval_interval: 200
+
+rl:
+  actor:
+    state_dim: 106
+    shared_hidden_dim: 128
+    when_hidden_dim: 32
+    who_hidden_dim: 64
+    what_hidden_dim: 64
+    max_neighbors: 5
+    k_neighbors: 2
+    num_repr_types: 2
+    dropout: 0.1
+  critic:
+    state_dim: 106
+    num_vehicles: 5
+    hidden_dim: 256
+    num_layers: 3
+    dropout: 0.1
+  training:
+    num_episodes: 1000          # 3000 → 1000
+    buffer_size: 500
+    batch_size: 64
+    ppo_epochs: 4
+    learning_rate: 0.0003
+    gamma: 0.99
+    gae_lambda: 0.95
+    clip_epsilon: 0.2
+    value_loss_coef: 0.5
+    entropy_coef: 0.01
+    max_grad_norm: 0.5
+    update_interval: 10
+    save_interval: 100
+    log_interval: 10
+  reward:
+    immediate_weight: 0.3
+    global_weight: 0.7
+    perf_scale: 100.0
+    comm_cost_scale: 0.0
+    staleness_penalty_weight: 0.0
+  k_neighbors: 2
+
+data:
+  num_vehicles: 5
+  batch_size: 64
+
+simulation:
+  num_vehicles: 5
+  max_episode_timesteps: 50   # 100 → 50
+  max_neighbors: 5
+  layer1_checkpoint: outputs/checkpoints/best_model.pt
+
+device: auto
+lstm_device: auto
+
+seed: 42
+paths:
+  output_dir: outputs
+run_name: heuristic_practical

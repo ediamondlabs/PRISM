@@ -1,0 +1,92 @@
+# @package _global_
+
+# RL Training Experiment Configuration
+# Train PPO agent for V2V communication control
+
+defaults:
+  - /data: v2v_trajectories
+  - /model: lstm_autoencoder
+  - /simulation: v2v_env
+  - _self_
+
+# Experiment name
+experiment_name: rl_training_baseline
+
+# Random seed
+seed: 42
+
+# Device
+device: auto  # 'cuda', 'cpu', or 'auto'
+
+# Output directories
+output_dir: outputs/rl
+mlflow_tracking_uri: outputs/mlruns
+
+# RL-specific overrides
+rl:
+  # Actor configuration
+  actor:
+    state_dim: 106  # 10 local + 96 neighbor encoding
+    shared_hidden_dim: 128
+    who_hidden_dim: 64
+    what_hidden_dim: 64
+    max_neighbors: 20
+    k_neighbors: 2
+    num_repr_types: 3
+    dropout: 0.1
+
+  # Critic configuration
+  critic:
+    type: centralized  # Use centralized critic for CTDE
+    state_dim: 106
+    num_vehicles: 50  # Updated to match trained autoencoder
+    hidden_dim: 256
+    num_layers: 3
+    dropout: 0.1
+
+  # PPO hyperparameters
+  ppo:
+    lr_actor: 3.0e-4
+    lr_critic: 1.0e-3
+    gamma: 0.99
+    gae_lambda: 0.95
+    clip_epsilon: 0.2
+    entropy_coef: 0.01
+    value_loss_coef: 0.5
+    max_grad_norm: 0.5
+
+  # Training settings
+  training:
+    num_updates: 1500  # Increased for 50 vehicles (was 1000)
+    num_epochs_per_update: 10  # PPO epochs per update
+    batch_size: 64
+    buffer_size: 4096  # Increased for 50 vehicles (was 2048)
+    save_interval: 100  # Save checkpoint every N updates
+    eval_interval: 50  # Evaluate policy every N updates
+    log_interval: 10  # Log stats every N updates
+
+  # Reward function
+  reward:
+    immediate_weight: 0.3
+    global_weight: 0.7
+    perf_scale: 100.0
+    comm_cost_scale: 0.01
+    success_bonus: 1.0
+
+    # Immediate reward components
+    anomaly_detection_weight: 0.5
+    communication_success_weight: 0.3
+    neighbor_stability_weight: 0.2
+
+# Simulation overrides
+simulation:
+  num_vehicles: 50  # Updated to match trained autoencoder
+  comm_range_m: 300.0
+  max_episode_timesteps: 100  # Shorter episodes for faster training
+  use_neighbor_encoder: false  # Start without neighbor encoder
+  layer1_checkpoint: outputs/checkpoints/best_model.pt
+
+# Data overrides
+data:
+  num_vehicles: 50  # Updated to match trained autoencoder
+  batch_size: 32

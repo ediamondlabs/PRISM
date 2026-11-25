@@ -1,0 +1,40 @@
+name: v2v_environment
+
+# Number of vehicles in simulation
+num_vehicles: 20
+
+# Communication range in meters
+comm_range_m: 300.0
+
+# Time step duration in seconds (10 Hz = 0.1s)
+time_step_duration_s: 0.1
+
+# Maximum timesteps per episode (3600 = 360 seconds = 6 minutes at 10 Hz)
+max_episode_timesteps: 3600
+
+# Layer 1 model checkpoint for embeddings and anomaly detection
+layer1_checkpoint: outputs/checkpoints/best_model.pt
+
+# Layer 2 model checkpoint for neighbor encoding (optional)
+use_neighbor_encoder: false
+layer2_checkpoint: null  # Set to checkpoint path when available
+
+# Data configuration
+data:
+  use_preprocessed: true
+  preprocessed_path: outputs/preprocessed
+
+# Observation mode (for future RL integration)
+observation_mode: full  # 'full', 'local', 'minimal'
+
+# Logging options
+logging:
+  log_neighbor_changes: true
+  log_communications: true
+  log_interval: 100  # Log metrics every N timesteps
+
+# Rendering options (for visualization)
+render:
+  enabled: false
+  mode: human  # 'human', 'rgb_array'
+  interval: 10  # Render every N timesteps
